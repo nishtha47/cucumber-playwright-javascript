@@ -22,6 +22,17 @@
                         <i class="glyphicon glyphicon-chevron-down"></i>
                         <b><%= feature.keyword %>:</b><%= feature.name %>
                         <span class="label-container">
+
+                        <%
+                            feature.time = 0
+                            // Add up time from each scenario in the feature.
+                            _.each(feature.elements, function(element, scenarioIndex) {
+                                feature.time = feature.time + element.time
+                            })
+                        %>
+
+                        <span><%= calculateDuration(feature.time) %></span>
+                                
               <% if (feature.scenarios.passed) { %><span class="label label-success"
                                                          title="<%= feature.scenarios.passed %> Scenarios Passed"><%= feature.scenarios.passed %></span><% } %>
               <% if (feature.scenarios.failed) { %><span class="label label-danger"
@@ -64,6 +75,7 @@
                                         </div>
                                         <div>
                             <span class="label-container <% if (element.retried) { %>label-retries<% } %>">
+                                <span><%= calculateDuration(element.time) %></span>
                               <% if (element.retried) { %><span class="label label-saffron"
                                                               title="Re-runs : <%= element.retried %>">Re-runs : <%= element.retried %></span><% } %>
                               <% if (element.passed) { %><span class="label label-success"
@@ -121,7 +133,7 @@
                                     <% } %>
                                     <span class="text">
                         <span class="keyword highlight"><%= step.keyword %></span>
-                          <span> <%- step.name %></span>
+                          <span class="stepname"> <%- step.name %></span>
                             <% if (step.doc_string && step.doc_string.value) { %>
                               <span>
                                <%- step.doc_string.value %>
