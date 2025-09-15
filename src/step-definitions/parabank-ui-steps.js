@@ -156,6 +156,11 @@ When('I select "SAVINGS" account type', async function () {
   await ensurePage(this);
   await this.page.waitForSelector('select[id="type"]', { state: 'visible', timeout: 120000 });
   await this.page.selectOption('select[id="type"]', '1');
+//  await this.page.click('input[@type="button"]');
+const button = this.page.locator('//*[@id="openAccountForm"]/form/div/input');
+await button.waitFor({ state: 'visible', timeout: 60000 });
+await button.scrollIntoViewIfNeeded();
+await button.click({ force: true });
 });
 
 When('I select an existing account to transfer from', async function () {
@@ -164,7 +169,82 @@ When('I select an existing account to transfer from', async function () {
   await this.page.selectOption('select[name="fromAccountId"]', { index: 0 });
 });
 
+/*When('I click {string} button', async function (buttonText) {
+  await ensurePage(this);
+
+  // Use more flexible locator
+  const button = this.page.locator(`button:has-text("${buttonText}"), input[value="${buttonText}"]`).first();
+
+  // Wait until the button is visible and enabled
+  await button.waitFor({ state: 'visible', timeout: 60000 });
+
+  // Ensure it’s interactable
+  await button.scrollIntoViewIfNeeded();
+
+  // Click and wait for possible navigation or network activity safely
+  try {
+    await Promise.all([
+      button.click({ timeout: 60000 }),
+      this.page.waitForLoadState('domcontentloaded', { timeout: 60000 }).catch(() => {}) // fallback
+    ]);
+  } catch (err) {
+    console.error(`Failed to click button "${buttonText}":`, err);
+    throw err;
+  }
+});*/
+
+/*When('I click "Open New Account" button', async function () {
+  await ensurePage(this);
+
+  // Wait for overlays or loaders to disappear
+  await this.page.locator('.overlay, .loading, .spinner').waitFor({ state: 'hidden', timeout: 30000 }).catch(() => {});
+
+  const button = this.page.locator('button:has-text("Open New Account"), input[type="button"]').first();
+
+  // Wait until button is visible and enabled
+  await button.waitFor({ state: 'visible', timeout: 60000 });
+  await button.waitFor({ state: 'enabled', timeout: 60000 });
+
+  // Scroll and click
+  await button.scrollIntoViewIfNeeded();
+  try {
+    await button.click({ timeout: 60000 });
+  } catch (err) {
+    console.warn('Normal click failed, using force click');
+    await button.click({ force: true });
+  }
+
+  await this.page.waitForLoadState('domcontentloaded');
+});*/
+
+
 When('I click {string} button', async function (buttonText) {
+  await ensurePage(this);
+
+  // Locate the button
+  const button = this.page.locator(`button:has-text("${buttonText}"), input[value="${buttonText}"]`).first();
+
+  // Wait for it to be visible and enabled
+  await button.waitFor({ state: 'visible', timeout: 60000 });
+  await button.waitFor({ state: 'attached', timeout: 60000 }); // ensure it's in DOM
+  await button.waitFor({ state: 'enabled', timeout: 60000 }); // ensure enabled
+
+  // Scroll into view
+  await button.scrollIntoViewIfNeeded();
+
+  // Click safely
+  try {
+    await button.click({ timeout: 60000 });
+    // Optional: wait for navigation or network activity if needed
+    await this.page.waitForLoadState('networkidle').catch(() => {});
+  } catch (err) {
+    console.error(`Failed to click button "${buttonText}"`, err);
+    throw err;
+  }
+});
+
+
+/*When('I click {string} button', async function (buttonText) {
   await ensurePage(this);
 
   const button = this.page.locator(`input[value="${buttonText}"], button:has-text("${buttonText}")`).first();
@@ -194,7 +274,7 @@ When('I click {string} button', async function (buttonText) {
     await this.page.waitForTimeout(3000);
   }
 });
-
+*/
 
 
 

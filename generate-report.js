@@ -1,41 +1,46 @@
-const fs = require('fs');
 const path = require('path');
-const { ReportAggregator, HtmlReporter } = require('wdio-html-nice-reporter'); // Example Extent-like reporter
+const fs = require('fs');
+const reporter = require('multiple-cucumber-html-reporter');
 
-// Paths
-const cucumberJsonPath = path.join(__dirname, 'reports', 'combined-cucumber-report.json');
+// Paths for all browser JSONs
+const browsers = ['chromium', 'firefox', 'webkit'];
+const jsonFiles = browsers
+  .map(browser => path.join(__dirname, 'reports', `${browser}-report.json`))
+  .filter(fs.existsSync); // only include existing files
+
+if (jsonFiles.length === 0) {
+  console.error('❌ No JSON reports found for any browser!');
+  process.exit(1);
+}
+
 const extentReportDir = path.join(__dirname, 'reports', 'extent');
 
-// Ensure output directory exists
-if (!fs.existsSync(extentReportDir)) {
-    fs.mkdirSync(extentReportDir, { recursive: true });
-}
-
-// Check if Cucumber JSON exists
-if (!fs.existsSync(cucumberJsonPath)) {
-    console.error(`❌ Cucumber JSON report not found at ${cucumberJsonPath}`);
-    process.exit(1);
-}
-
-// Load JSON
-const cucumberData = JSON.parse(fs.readFileSync(cucumberJsonPath, 'utf-8'));
-
-// Initialize report aggregator
-const reportAggregator = new ReportAggregator({
-    outputDir: extentReportDir,
-    filename: 'index.html',
-    reportTitle: 'Parabank Automation Extent Spark Report',
-    browserName: 'N/A',
-    collapseTests: true,
-    displayDuration: true,
+// Generate unified report
+reporter.generate({
+  jsonDir: path.dirname(jsonFiles[0]), // all JSONs should be in the same folder
+  jsonFile: jsonFiles.map(f => path.basename(f)), // multiple JSON files
+  reportPath: extentReportDir,
+  displayDuration: true,
+  openReportInBrowser: true,
+  metadata: {
+    browser: {
+      name: 'Multiple Browsers',
+      version: 'N/A'
+    },
+    device: 'CI Machine',
+    platform: {
+      name: process.platform,
+      version: process.version
+    }
+  },
+  customData: {
+    title: 'Project Info',
+    data: [
+      { label: 'Project', value: 'Parabank Automation' },
+      { label: 'Release', value: '1.0.0' },
+      { label: 'Execution Start Time', value: new Date().toLocaleString() }
+    ]
+  }
 });
 
-// Add JSON data to report
-reportAggregator.createReport(cucumberData)
-    .then(() => {
-        console.log(`✅ Extent Spark report generated at ${path.join(extentReportDir, 'index.html')}`);
-    })
-    .catch((err) => {
-        console.error('❌ Failed to generate Extent report:', err);
-        process.exit(1);
-    });
+console.log(`✅ Unified Extent/Spark-style report generated at ${extentReportDir}`);
