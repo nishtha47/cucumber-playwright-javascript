@@ -1,4 +1,4 @@
-# cucumber-playwright-javascript-nm
+# Cucumber-Playwright-Javascript
 Automation framework using cucumber playwright and JavaScript language.
 
 
