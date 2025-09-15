@@ -399,6 +399,9 @@ For issues, questions, or contributions:
 
 <img width="2662" height="924" alt="image" src="https://github.com/user-attachments/assets/2b5dea41-43c4-42b3-8cdf-e273f92634c6" />
 
+<img width="2670" height="474" alt="image" src="https://github.com/user-attachments/assets/f48572b3-4747-49b8-8b33-14ec03f6d95b" />
+
+
 ---
 
 **Note**: This framework is designed for testing the ParaBank demo application. Ensure the target application is accessible before running tests.
