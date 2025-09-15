@@ -193,6 +193,7 @@ BROWSER=firefox npx cucumber-js src/features/**/*.feature --parallel 1 --format 
 
 # WebKit
 BROWSER=webkit npx cucumber-js src/features/**/*.feature --parallel 1 --format json:reports/webkit-report.json
+
 ```
 
 ## CI/CD Integration
@@ -350,6 +351,12 @@ For issues, questions, or contributions:
 - Create an issue in the GitHub repository
 - Check existing documentation and troubleshooting guides
 - Review the Jenkins pipeline logs for CI/CD issues
+
+## Reports Generated
+
+<img width="3260" height="1836" alt="image" src="https://github.com/user-attachments/assets/ec42043a-c844-476d-b871-e80e321d07a0" />
+
+  
 
 ---
 
