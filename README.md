@@ -216,6 +216,20 @@ The project includes a complete Jenkins pipeline (`Jenkinsfile`) with:
 - Comprehensive reporting and artifact management
 - Environment-specific configurations
 
+## Need to have Jenkins container and docker installed within it.
+
+```
+nishthamishra@Nishthas-MBP cucumber-playwright-javascript % docker run -d \
+  --name jenkins-new \
+  -p 8081:8080 -p 50000:50000 \
+  -v jenkins_home:/var/jenkins_home \
+  -v /var/run/docker.sock:/var/run/docker.sock \
+  jenkins/jenkins:lts
+
+98cc4748d76706331aa044fc194a4eebd941602e4f32940dd222efa1b5af7b8d
+
+```
+
 ### Running in Jenkins
 
 1. Create a new Pipeline job in Jenkins
