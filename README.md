@@ -54,7 +54,7 @@ This framework provides automated testing capabilities for the ParaBank demo ban
 
 1. **Clone the repository**:
    ```bash
-   git clone https://github.com/nishtha47/cucumber-playwright-javascript.git
+   git clone https://github.com/nishtha47/cucumber-playwright-javascript-nm.git
    cd cucumber-playwright-javascript
    ```
 
