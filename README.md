@@ -395,6 +395,9 @@ For issues, questions, or contributions:
 
 <img width="3342" height="1720" alt="image" src="https://github.com/user-attachments/assets/b6a9459c-92e9-4835-b041-9e64973df480" />
 
+## Scenario coverage
+
+<img width="2662" height="924" alt="image" src="https://github.com/user-attachments/assets/2b5dea41-43c4-42b3-8cdf-e273f92634c6" />
 
 ---
 
