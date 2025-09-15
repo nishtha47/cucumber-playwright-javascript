@@ -12,7 +12,7 @@ pipeline {
         stage('Checkout') {
             steps {
                 echo "Checking out source code..."
-                git url: 'https://github.com/nishtha47/cucumber-playwright-javascript.git', branch: 'qa-coding-test'
+                git url: 'https://github.com/nishtha47/cucumber-playwright-javascript-nm.git', branch: 'qa-coding-test'
             }
         }
 
