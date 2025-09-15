@@ -1,6 +1,8 @@
 # Cucumber-Playwright-Javascript
 Automation framework using cucumber playwright and JavaScript language.
 
+Cucumber-Playwright-JavaScript provides an end-to-end test automation solution for the ParaBank demo banking application, covering both API and UI testing. It combines Cucumber (Gherkin syntax) for behavior-driven test scenarios with Playwright for cross-browser automation (Chromium, Firefox, WebKit) and supports parallel execution, environment-specific configuration, and API client utilities. The framework is CI/CD ready with Jenkins and Docker integration, generating rich JSON, JUnit, and HTML reports enhanced with screenshots, videos, and detailed logs for advanced debugging and reporting.
+
 
 # ParaBank Test Automation Framework
 
