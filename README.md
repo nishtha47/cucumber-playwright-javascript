@@ -225,6 +225,85 @@ All browsers support:
 - Network request interception
 - Mobile device emulation
 
+  ```bash
+  cucumber-playwright-javascript/
+├── 📁 .github/                          # GitHub-specific files
+│   └── workflows/
+│       └── ci.yml                       # GitHub Actions workflow (optional)
+│
+├── 📁 .jenkins/                         # Jenkins-specific configurations
+│   ├── jobs/                           # Job configurations
+│   │   └── parabank-automation.xml     # Job definition
+│   └── pipelines/                      # Pipeline scripts
+│       └── multibranch-config.xml      # Multibranch pipeline config
+│
+├── 📁 ci-cd/                           # 🎯 Main CI/CD directory
+│   ├── 📁 docker/                      # Docker-related files
+│   │   ├── Dockerfile                  # ✅ Main container definition
+│   │   ├── docker-compose.yml          # ✅ Multi-service setup
+│   │   ├── docker-compose.prod.yml     # Production override
+│   │   └── nginx.conf                  # ✅ Nginx configuration
+│   │
+│   ├── 📁 jenkins/                     # Jenkins automation scripts
+│   │   ├── jenkins-setup.sh           # ✅ Automated Jenkins setup
+│   │   ├── Jenkinsfile                 # ✅ Main pipeline definition
+│   │   ├── Jenkinsfile.multibranch     # Multibranch pipeline
+│   │   └── job-config.xml              # Job configuration template
+│   │
+│   ├── 📁 monitoring/                  # Monitoring and alerting
+│   │   ├── pipeline-monitor.sh         # ✅ Health monitoring script
+│   │   ├── monitoring-config.json      # Configuration template
+│   │   └── alerts/                     # Alert templates
+│   │       ├── slack-template.json
+│   │       └── email-template.html
+│   │
+│   ├── 📁 scripts/                     # Utility scripts
+│   │   ├── setup-environment.sh        # Environment setup
+│   │   ├── install-dependencies.sh     # Dependency installer
+│   │   ├── cleanup.sh                  # Cleanup script
+│   │   └── health-check.sh             # Quick health check
+│   │
+│   └── 📁 configs/                     # Configuration files
+│       ├── eslint.config.js            # Linting configuration
+│       ├── test-environments.json      # Environment configs
+│       └── quality-gates.json          # Quality gate definitions
+│
+├── 📁 docs/                            # Documentation
+│   ├── ci-cd-setup.md                  # ✅ CI/CD setup guide
+│   ├── jenkins-configuration.md        # Jenkins specific docs
+│   ├── docker-deployment.md            # Docker deployment guide
+│   ├── troubleshooting.md              # Common issues & solutions
+│   └── 📁 images/                      # Documentation images
+│       ├── pipeline-architecture.png
+│       └── jenkins-dashboard.png
+│
+├── 📁 reports/                         # Generated reports (gitignored)
+│   ├── 📁 screenshots/                 # Test screenshots
+│   ├── 📁 videos/                      # Test recordings
+│   ├── 📁 extent/                      # Extent reports
+│   ├── 📁 allure-results/              # Allure raw data
+│   ├── 📁 allure-reports/              # Allure HTML reports
+│   └── 📁 html/                        # HTML reports
+│
+├── 📁 src/                             # 🧪 Test source code (existing)
+│   ├── 📁 features/
+│   ├── 📁 pages/
+│   ├── 📁 step-definitions/
+│   ├── 📁 support/
+│   └── 📁 util/
+│
+├── 📁 config/                          # Test configuration (existing)
+│   └── cucumber.config.js
+│
+├── 📄 Jenkinsfile                      # ✅ Pipeline at root (Jenkins convention)
+├── 📄 Dockerfile                       # ✅ Container definition at root
+├── 📄 docker-compose.yml               # ✅ Compose file at root
+├── 📄 package.json                     # ✅ Enhanced with CI scripts
+├── 📄 .gitignore                       # Git ignore patterns
+├── 📄 .dockerignore                    # Docker ignore patterns
+├── 📄 README.md                        # Main project documentation
+└── 📄 LICENSE                          # Project license
+
 ## Troubleshooting
 
 ### Common Issues
