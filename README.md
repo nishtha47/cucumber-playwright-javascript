@@ -181,6 +181,23 @@ npx cucumber-js src/features/parabank-ui.feature
 BROWSER=firefox npm test
 ```
 
+**Run tests togetther**:
+```bash
+REPORT_FILE="reports/chromium-report-$(date +%s).json"
+
+# Run Cucumber tests and output JSON
+npx cucumber-js "src/features/**/*.feature" \
+  --require "src/step-definitions/**/*.js" \
+  --require "src/support/hooks.js" \
+  --require "src/support/world.js" \
+  --format json:$REPORT_FILE
+
+echo "✅ Cucumber JSON report generated at $REPORT_FILE"
+
+# Generate Extent HTML report using your generate-report.js script
+node generate-report.js "$REPORT_FILE"
+```
+
 ### Parallel Execution
 
 **Run tests in parallel across browsers**:
