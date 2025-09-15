@@ -76,7 +76,7 @@ This framework provides automated testing capabilities for the ParaBank demo ban
 ## Project Structure
 
 ```
-cucumber-playwright-javascript/
+cucumber-playwright-javascript-nm/
 ├── src/
 │   ├── features/                 # Cucumber feature files
 │   │   ├── parabank-api.feature  # API test scenarios
@@ -89,10 +89,48 @@ cucumber-playwright-javascript/
 │   │   ├── world.js             # Custom World class
 │   │   └── api-client.js        # API client utilities
 │   └── utils/                   # Utility functions
+│       ├── test-data-generator.js # Test data creation utilities
+│       ├── config-manager.js     # Environment configuration
+│       └── logger.js            # Logging utilities
 ├── reports/                     # Test execution reports
-├── Jenkinsfile                  # CI/CD pipeline configuration
-├── package.json                 # Project dependencies
-└── README.md                    # Project documentation
+│   ├── cucumber-report.html     # HTML cucumber report
+│   ├── cucumber-report.json     # JSON cucumber report
+│   ├── junit-report.xml         # JUnit XML report
+│   ├── playwright-report/       # Playwright HTML reports
+│   │   └── index.html
+│   ├── screenshots/             # Test failure screenshots
+│   └── videos/                  # Test execution videos
+├── docker/                      # Docker configuration files
+│   ├── Dockerfile              # Main application Dockerfile
+│   ├── Dockerfile.test         # Test execution Dockerfile
+│   ├── docker-compose.yml      # Multi-service orchestration
+│   ├── docker-compose.test.yml # Test environment setup
+│   └── scripts/                # Docker utility scripts
+│       ├── build.sh            # Docker build script
+│       ├── run-tests.sh        # Test execution script
+│       └── cleanup.sh          # Cleanup script
+├── config/                     # Configuration files
+│   ├── cucumber.js             # Cucumber configuration
+│   ├── playwright.config.js    # Playwright configuration
+│   ├── environments/           # Environment-specific configs
+│   │   ├── dev.json
+│   │   ├── staging.json
+│   │   └── prod.json
+│   └── test-settings.json      # Test execution settings
+├── .github/                    # GitHub Actions workflows
+│   └── workflows/
+│       ├── ci.yml              # Continuous Integration
+│       └── nightly-tests.yml   # Scheduled test runs
+├── docs/                       # Project documentation
+│   ├── api-documentation.md    # API testing guide
+│   ├── ui-testing-guide.md     # UI testing best practices
+│   └── docker-setup.md        # Docker setup instructions
+├── .dockerignore              # Docker ignore file
+├── .gitignore                 # Git ignore file
+├── Jenkinsfile                # CI/CD pipeline configuration
+├── package.json               # Project dependencies
+├── package-lock.json          # Locked dependency versions
+└── README.md                  # Project documentation
 ```
 
 ## Configuration
@@ -225,84 +263,7 @@ All browsers support:
 - Network request interception
 - Mobile device emulation
 
-  ```bash
-  cucumber-playwright-javascript/
-├── 📁 .github/                          # GitHub-specific files
-│   └── workflows/
-│       └── ci.yml                       # GitHub Actions workflow (optional)
-│
-├── 📁 .jenkins/                         # Jenkins-specific configurations
-│   ├── jobs/                           # Job configurations
-│   │   └── parabank-automation.xml     # Job definition
-│   └── pipelines/                      # Pipeline scripts
-│       └── multibranch-config.xml      # Multibranch pipeline config
-│
-├── 📁 ci-cd/                           # 🎯 Main CI/CD directory
-│   ├── 📁 docker/                      # Docker-related files
-│   │   ├── Dockerfile                  # ✅ Main container definition
-│   │   ├── docker-compose.yml          # ✅ Multi-service setup
-│   │   ├── docker-compose.prod.yml     # Production override
-│   │   └── nginx.conf                  # ✅ Nginx configuration
-│   │
-│   ├── 📁 jenkins/                     # Jenkins automation scripts
-│   │   ├── jenkins-setup.sh           # ✅ Automated Jenkins setup
-│   │   ├── Jenkinsfile                 # ✅ Main pipeline definition
-│   │   ├── Jenkinsfile.multibranch     # Multibranch pipeline
-│   │   └── job-config.xml              # Job configuration template
-│   │
-│   ├── 📁 monitoring/                  # Monitoring and alerting
-│   │   ├── pipeline-monitor.sh         # ✅ Health monitoring script
-│   │   ├── monitoring-config.json      # Configuration template
-│   │   └── alerts/                     # Alert templates
-│   │       ├── slack-template.json
-│   │       └── email-template.html
-│   │
-│   ├── 📁 scripts/                     # Utility scripts
-│   │   ├── setup-environment.sh        # Environment setup
-│   │   ├── install-dependencies.sh     # Dependency installer
-│   │   ├── cleanup.sh                  # Cleanup script
-│   │   └── health-check.sh             # Quick health check
-│   │
-│   └── 📁 configs/                     # Configuration files
-│       ├── eslint.config.js            # Linting configuration
-│       ├── test-environments.json      # Environment configs
-│       └── quality-gates.json          # Quality gate definitions
-│
-├── 📁 docs/                            # Documentation
-│   ├── ci-cd-setup.md                  # ✅ CI/CD setup guide
-│   ├── jenkins-configuration.md        # Jenkins specific docs
-│   ├── docker-deployment.md            # Docker deployment guide
-│   ├── troubleshooting.md              # Common issues & solutions
-│   └── 📁 images/                      # Documentation images
-│       ├── pipeline-architecture.png
-│       └── jenkins-dashboard.png
-│
-├── 📁 reports/                         # Generated reports (gitignored)
-│   ├── 📁 screenshots/                 # Test screenshots
-│   ├── 📁 videos/                      # Test recordings
-│   ├── 📁 extent/                      # Extent reports
-│   ├── 📁 allure-results/              # Allure raw data
-│   ├── 📁 allure-reports/              # Allure HTML reports
-│   └── 📁 html/                        # HTML reports
-│
-├── 📁 src/                             # 🧪 Test source code (existing)
-│   ├── 📁 features/
-│   ├── 📁 pages/
-│   ├── 📁 step-definitions/
-│   ├── 📁 support/
-│   └── 📁 util/
-│
-├── 📁 config/                          # Test configuration (existing)
-│   └── cucumber.config.js
-│
-├── 📄 Jenkinsfile                      # ✅ Pipeline at root (Jenkins convention)
-├── 📄 Dockerfile                       # ✅ Container definition at root
-├── 📄 docker-compose.yml               # ✅ Compose file at root
-├── 📄 package.json                     # ✅ Enhanced with CI scripts
-├── 📄 .gitignore                       # Git ignore patterns
-├── 📄 .dockerignore                    # Docker ignore patterns
-├── 📄 README.md                        # Main project documentation
-└── 📄 LICENSE                          # Project license
+  
 
 ## Troubleshooting
 
