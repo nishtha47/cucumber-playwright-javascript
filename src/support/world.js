@@ -32,7 +32,7 @@ class CustomWorld extends World {
     }
 
     // -------------------- Browser Helpers --------------------
-    async initBrowser(headless = false) {
+    async initBrowser(headless = true) {
         if (!this.browser) {
             this.browser = await chromium.launch({
                 headless,
