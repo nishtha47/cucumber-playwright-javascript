@@ -1,0 +1,103 @@
+[
+  {
+    "description": "  As a banking customer\n  I want to use the online banking system\n  So that I can manage my accounts and perform banking operations",
+    "elements": [
+      {
+        "description": "",
+        "id": "parabank-application-ui-testing;global-navigation-menu-validation",
+        "keyword": "Scenario",
+        "line": 20,
+        "name": "Global Navigation Menu Validation",
+        "steps": [
+          {
+            "arguments": [],
+            "keyword": "Given ",
+            "line": 8,
+            "name": "I navigate to Parabank application",
+            "match": {
+              "location": "src/step-definitions/parabank-ui-steps.js:20"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 3001479124
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "Given ",
+            "line": 21,
+            "name": "I have registered and logged in with a new user",
+            "match": {
+              "location": "src/step-definitions/parabank-ui-steps.js:70"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 1625977667
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "When ",
+            "line": 22,
+            "name": "I verify the global navigation menu",
+            "match": {
+              "location": "src/step-definitions/parabank-ui-steps.js:143"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 16874249
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "Then ",
+            "line": 23,
+            "name": "all navigation links should be present and functional",
+            "match": {
+              "location": "src/step-definitions/parabank-ui-steps.js:149"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 10708249
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "And ",
+            "line": 24,
+            "name": "each menu item should navigate to correct page",
+            "match": {
+              "location": "src/step-definitions/parabank-ui-steps.js:155"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 4316108249
+            }
+          }
+        ],
+        "tags": [
+          {
+            "name": "@ui",
+            "line": 1
+          },
+          {
+            "name": "@regression",
+            "line": 19
+          }
+        ],
+        "type": "scenario"
+      }
+    ],
+    "id": "parabank-application-ui-testing",
+    "line": 2,
+    "keyword": "Feature",
+    "name": "Parabank Application UI Testing",
+    "tags": [
+      {
+        "name": "@ui",
+        "line": 1
+      }
+    ],
+    "uri": "src/features/parabank-ui.feature"
+  }
+]

@@ -1,0 +1,156 @@
+[
+  {
+    "description": "  As a banking customer\n  I want to use the online banking system\n  So that I can manage my accounts and perform banking operations",
+    "elements": [
+      {
+        "description": "",
+        "id": "parabank-application-ui-testing;accounts-overview-validation",
+        "keyword": "Scenario",
+        "line": 37,
+        "name": "Accounts Overview Validation",
+        "steps": [
+          {
+            "arguments": [],
+            "keyword": "Given ",
+            "line": 8,
+            "name": "I navigate to Parabank application",
+            "match": {
+              "location": "src/step-definitions/parabank-ui-steps.js:19"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 2568927584
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "Given ",
+            "line": 38,
+            "name": "I have registered and logged in with a new user",
+            "match": {
+              "location": "src/step-definitions/parabank-ui-steps.js:69"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 1035499291
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "When ",
+            "line": 40,
+            "name": "I navigate to \"Open New Account\" page",
+            "match": {
+              "location": "src/step-definitions/parabank-ui-steps.js:138"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 999930834
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "And ",
+            "line": 41,
+            "name": "I select \"SAVINGS\" account type",
+            "match": {
+              "location": "src/step-definitions/parabank-ui-steps.js:155"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 57008332
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "When ",
+            "line": 42,
+            "name": "I click \"Open New Account\" button",
+            "match": {
+              "location": "src/step-definitions/parabank-ui-steps.js:258"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 34114000
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "When ",
+            "line": 43,
+            "name": "I navigate to \"Accounts Overview\" page",
+            "match": {
+              "location": "src/step-definitions/parabank-ui-steps.js:138"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 1003878292
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "Then ",
+            "line": 44,
+            "name": "I should see all my accounts listed",
+            "match": {
+              "location": "src/step-definitions/parabank-ui-steps.js:478"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 23643958
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "And ",
+            "line": 45,
+            "name": "each account should display correct balance",
+            "match": {
+              "location": "src/step-definitions/parabank-ui-steps.js:484"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 9611207
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "And ",
+            "line": 46,
+            "name": "account details should be accurate",
+            "match": {
+              "location": "src/step-definitions/parabank-ui-steps.js:490"
+            },
+            "result": {
+              "status": "failed",
+              "duration": 1873499,
+              "error_message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mnot\u001b[2m.\u001b[22mtoBeNull\u001b[2m()\u001b[22m\n\nReceived: \u001b[31mnull\u001b[39m\n    at Proxy.<anonymous> (/Users/nishthamishra/Documents/Code_Final/cucumber-playwright-javascript-nm/node_modules/playwright/lib/matchers/expect.js:221:24)\n    at CustomWorld.<anonymous> (/Users/nishthamishra/Documents/Code_Final/cucumber-playwright-javascript-nm/src/step-definitions/parabank-ui-steps.js:494:29)"
+            }
+          }
+        ],
+        "tags": [
+          {
+            "name": "@ui",
+            "line": 1
+          },
+          {
+            "name": "@account-management",
+            "line": 36
+          }
+        ],
+        "type": "scenario"
+      }
+    ],
+    "id": "parabank-application-ui-testing",
+    "line": 2,
+    "keyword": "Feature",
+    "name": "Parabank Application UI Testing",
+    "tags": [
+      {
+        "name": "@ui",
+        "line": 1
+      }
+    ],
+    "uri": "src/features/parabank-ui.feature"
+  }
+]

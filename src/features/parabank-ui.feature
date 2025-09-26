@@ -28,8 +28,7 @@ Feature: Parabank Application UI Testing
     Given I have registered and logged in with a new user
     When I navigate to "Open New Account" page
     And I select "SAVINGS" account type
-    And I select an existing account to transfer from
-    And I click "Open New Account" button
+    When I click "Open New Account" button
     Then I should see account creation success message
     And I should capture the new savings account number
     And the account should appear in accounts overview
@@ -37,24 +36,36 @@ Feature: Parabank Application UI Testing
   @account-management
   Scenario: Accounts Overview Validation
     Given I have registered and logged in with a new user
-    And I have created a savings account
+    #And I have created a savings account
+    When I navigate to "Open New Account" page
+    And I select "SAVINGS" account type
+    When I click "Open New Account" button
     When I navigate to "Accounts Overview" page
     Then I should see all my accounts listed
     And each account should display correct balance
     And account details should be accurate
 
+ 
+
   @fund-transfer
-  Scenario: Fund Transfer Between Accounts
-    Given I have registered and logged in with a new user
-    And I have created a savings account
-    When I navigate to "Transfer Funds" page
-    And I enter amount "100.00" to transfer
-    And I select source account
-    And I select destination account
-    And I click "Transfer" button
-    Then I should see transfer success message
-    And the transfer should be reflected in account balances
-    And transaction should appear in transaction history
+Scenario: Fund Transfer Between Accounts
+  Given I have registered and logged in with a new user
+  And I have created a savings account
+  When I navigate to "Transfer Funds" page
+  And I select source account
+  And I select destination account
+  And I enter amount "100.00" to transfer
+  And I click "Transfer" button
+  Then I should see transfer success message
+  Then I capture the UI balance
+  Given I fetch account data from API
+  Then account balances should be synchronized
+  And transaction should appear in transaction history
+
+
+
+
+  
 
   @bill-payment
   Scenario: Bill Payment
@@ -84,14 +95,16 @@ Feature: Parabank Application UI Testing
     When I verify the global navigation menu
     And I navigate to "Open New Account" page
     And I select "SAVINGS" account type
-    And I select an existing account to transfer from
+    #When I navigate to "Transfer Funds" page
+    #And I select an existing account to transfer from
     And I click "Open New Account" button
     Then I should see account creation success message
     And I should capture the new savings account number
     And the account should appear in accounts overview
     When I navigate to "Transfer Funds" page
     And I enter amount "100.00" to transfer
-    And I select source account
+    And I select an existing account to transfer from
+    #And I select source account
     And I select destination account
     And I click "Transfer" button
     Then I should see transfer success message

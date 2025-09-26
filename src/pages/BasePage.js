@@ -2,26 +2,27 @@ class BasePage {
   constructor(page, world) {
     this.page = page;
     this.world = world;
-    this.timeout = 30000;
+    this.timeout = 30000; // default timeout
   }
 
-  // Common selectors used across pages
+  // Common selectors
   selectors = {
     loadingSpinner: '.loading',
     errorMessage: '.error',
     successMessage: '.message'
   };
 
+  ///////////////////////////
+  // ELEMENT ACTIONS
+  ///////////////////////////
+
   // Wait for element to be visible
   async waitForElement(selector, timeout = this.timeout) {
     try {
-      await this.page.waitForSelector(selector, { 
-        state: 'visible', 
-        timeout 
-      });
+      await this.page.locator(selector).waitFor({ state: 'visible', timeout });
       return true;
     } catch (error) {
-      console.log(`Element not found: ${selector}`);
+      console.warn(`Element not found: ${selector}`);
       return false;
     }
   }
@@ -29,78 +30,111 @@ class BasePage {
   // Wait for element to be hidden
   async waitForElementToHide(selector, timeout = this.timeout) {
     try {
-      await this.page.waitForSelector(selector, { 
-        state: 'hidden', 
-        timeout 
-      });
-      return true;
-    } catch (error) {
-      return false;
-    }
-  }
-
-  // Click element with retry mechanism
-  async clickElement(selector, timeout = this.timeout) {
-    await this.waitForElement(selector, timeout);
-    await this.page.click(selector);
-    await this.page.waitForLoadState('networkidle');
-  }
-
-  // Fill input field
-  async fillField(selector, value, timeout = this.timeout) {
-    await this.waitForElement(selector, timeout);
-    await this.page.fill(selector, value);
-  }
-
-  // Get text content
-  async getTextContent(selector, timeout = this.timeout) {
-    await this.waitForElement(selector, timeout);
-    return await this.page.textContent(selector);
-  }
-
-  // Get element attribute
-  async getAttribute(selector, attribute, timeout = this.timeout) {
-    await this.waitForElement(selector, timeout);
-    return await this.page.getAttribute(selector, attribute);
-  }
-
-  // Select option from dropdown
-  async selectOption(selector, value, timeout = this.timeout) {
-    await this.waitForElement(selector, timeout);
-    await this.page.selectOption(selector, value);
-  }
-
-  // Check if element exists
-  async elementExists(selector) {
-    try {
-      await this.page.waitForSelector(selector, { timeout: 5000 });
+      await this.page.locator(selector).waitFor({ state: 'hidden', timeout });
       return true;
     } catch {
       return false;
     }
   }
 
-  // Wait for page to load completely
+  // Click element with optional force
+  async clickElement(selector, { timeout = this.timeout, force = false } = {}) {
+    await this.waitForElement(selector, timeout);
+    await this.page.locator(selector).click({ force });
+    await this.page.waitForLoadState('networkidle');
+  }
+
+  // Fill input field with optional clearing
+  async fillField(selector, value, { timeout = this.timeout, clear = true } = {}) {
+    await this.waitForElement(selector, timeout);
+    const element = this.page.locator(selector);
+    if (clear) await element.fill('');
+    await element.fill(value);
+  }
+
+  // Get text content
+  async getTextContent(selector, timeout = this.timeout) {
+    await this.waitForElement(selector, timeout);
+    return await this.page.locator(selector).textContent();
+  }
+
+  // Get element attribute
+  async getAttribute(selector, attribute, timeout = this.timeout) {
+    await this.waitForElement(selector, timeout);
+    return await this.page.locator(selector).getAttribute(attribute);
+  }
+
+  // Select option from dropdown
+  async selectOption(selector, value, timeout = this.timeout) {
+    await this.waitForElement(selector, timeout);
+    await this.page.locator(selector).selectOption(value);
+  }
+
+  // Check if element exists
+  async elementExists(selector) {
+    try {
+      await this.page.locator(selector).waitFor({ timeout: 5000 });
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  ///////////////////////////
+  // PAGE NAVIGATION
+  ///////////////////////////
+
+  async navigateTo(url) {
+    await this.page.goto(url, { waitUntil: 'networkidle' });
+  }
+
   async waitForPageLoad() {
     await this.page.waitForLoadState('networkidle');
   }
 
-  // Take screenshot
-  async takeScreenshot(name) {
-    return await this.world.takeScreenshot(name);
+  async refreshPage() {
+    await this.page.reload({ waitUntil: 'networkidle' });
   }
 
-  // Scroll element into view
+  async goBack() {
+    await this.page.goBack({ waitUntil: 'networkidle' });
+  }
+
+  async goForward() {
+    await this.page.goForward({ waitUntil: 'networkidle' });
+  }
+
+  ///////////////////////////
+  // SCROLL, HOVER & KEYS
+  ///////////////////////////
+
   async scrollIntoView(selector) {
-    await this.page.evaluate(selector => {
-      const element = document.querySelector(selector);
-      if (element) {
-        element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      }
-    }, selector);
+    const element = this.page.locator(selector);
+    await element.scrollIntoViewIfNeeded();
   }
 
-  // Wait for text to be present
+  async hoverElement(selector, timeout = this.timeout) {
+    await this.waitForElement(selector, timeout);
+    await this.page.locator(selector).hover();
+  }
+
+  async pressKey(key) {
+    await this.page.keyboard.press(key);
+  }
+
+  ///////////////////////////
+  // MISC
+  ///////////////////////////
+
+  async takeScreenshot(name = 'screenshot') {
+    if (this.world && this.world.takeScreenshot) {
+      return await this.world.takeScreenshot(name);
+    } else {
+      console.warn('world.takeScreenshot not defined');
+      return null;
+    }
+  }
+
   async waitForText(text, timeout = this.timeout) {
     try {
       await this.page.waitForFunction(
@@ -114,111 +148,45 @@ class BasePage {
     }
   }
 
-  // Get current URL
-  async getCurrentUrl() {
-    return this.page.url();
+  async handleDialog(action = 'accept', text = null) {
+    this.page.on('dialog', async dialog => {
+      if (text) await dialog[action](text);
+      else await dialog[action]();
+    });
   }
 
-  // Navigate to URL
-  async navigateTo(url) {
-    await this.page.goto(url, { waitUntil: 'networkidle' });
+  async switchToFrame(frameSelector) {
+    return this.page.frame(frameSelector);
   }
 
-  // Wait for navigation
-  async waitForNavigation() {
-    await this.page.waitForLoadState('networkidle');
+  async getPageTitle() {
+    return this.page.title();
   }
 
-  // Hover over element
-  async hoverElement(selector, timeout = this.timeout) {
-    await this.waitForElement(selector, timeout);
-    await this.page.hover(selector);
-  }
+  ///////////////////////////
+  // ELEMENT COLLECTION
+  ///////////////////////////
 
-  // Double click element
-  async doubleClick(selector, timeout = this.timeout) {
-    await this.waitForElement(selector, timeout);
-    await this.page.dblclick(selector);
-  }
-
-  // Right click element
-  async rightClick(selector, timeout = this.timeout) {
-    await this.waitForElement(selector, timeout);
-    await this.page.click(selector, { button: 'right' });
-  }
-
-  // Get all elements matching selector
   async getAllElements(selector) {
     return await this.page.locator(selector).all();
   }
 
-  // Count elements
   async countElements(selector) {
     return await this.page.locator(selector).count();
   }
 
-  // Wait for element to contain text
   async waitForElementWithText(selector, text, timeout = this.timeout) {
     try {
-      await this.page.waitForSelector(`${selector}:has-text("${text}")`, { timeout });
+      await this.page.locator(`${selector}:has-text("${text}")`).waitFor({ timeout });
       return true;
     } catch {
       return false;
     }
   }
 
-  // Clear field and fill
   async clearAndFill(selector, value, timeout = this.timeout) {
-    await this.waitForElement(selector, timeout);
-    await this.page.fill(selector, ''); // Clear first
-    await this.page.fill(selector, value);
-  }
-
-  // Press key
-  async pressKey(key) {
-    await this.page.keyboard.press(key);
-  }
-
-  // Handle alert/confirm dialogs
-  async handleDialog(action = 'accept', text = null) {
-    this.page.on('dialog', async dialog => {
-      if (text) {
-        await dialog[action](text);
-      } else {
-        await dialog[action]();
-      }
-    });
-  }
-
-  // Switch to frame
-  async switchToFrame(frameSelector) {
-    return await this.page.frame(frameSelector);
-  }
-
-  // Get page title
-  async getPageTitle() {
-    return await this.page.title();
-  }
-
-  // Refresh page
-  async refreshPage() {
-    await this.page.reload({ waitUntil: 'networkidle' });
-  }
-
-  // Go back in browser history
-  async goBack() {
-    await this.page.goBack({ waitUntil: 'networkidle' });
-  }
-
-  // Go forward in browser history
-  async goForward() {
-    await this.page.goForward({ waitUntil: 'networkidle' });
-  }
-
-  // Wait for specific amount of time
-  async wait(milliseconds) {
-    await this.page.waitForTimeout(milliseconds);
+    await this.fillField(selector, value, { timeout, clear: true });
   }
 }
 
-module.exports = { BasePage };
+module.exports = BasePage;

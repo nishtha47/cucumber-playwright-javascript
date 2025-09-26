@@ -1,0 +1,181 @@
+[
+  {
+    "description": "  As a banking customer\n  I want to use the online banking system\n  So that I can manage my accounts and perform banking operations",
+    "elements": [
+      {
+        "description": "",
+        "id": "parabank-application-ui-testing;fund-transfer-between-accounts",
+        "keyword": "Scenario",
+        "line": 49,
+        "name": "Fund Transfer Between Accounts",
+        "steps": [
+          {
+            "arguments": [],
+            "keyword": "Given ",
+            "line": 8,
+            "name": "I navigate to Parabank application",
+            "match": {
+              "location": "src/step-definitions/parabank-ui-steps.js:20"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 2684775875
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "Given ",
+            "line": 50,
+            "name": "I have registered and logged in with a new user",
+            "match": {
+              "location": "src/step-definitions/parabank-ui-steps.js:70"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 1067534166
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "And ",
+            "line": 51,
+            "name": "I have created a savings account",
+            "match": {
+              "location": "src/step-definitions/parabank-ui-steps.js:93"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 852542041
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "When ",
+            "line": 52,
+            "name": "I navigate to \"Transfer Funds\" page",
+            "match": {
+              "location": "src/step-definitions/parabank-ui-steps.js:168"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 1077216167
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "And ",
+            "line": 53,
+            "name": "I select source account",
+            "match": {
+              "location": "src/step-definitions/parabank-ui-steps.js:489"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 30011833
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "And ",
+            "line": 54,
+            "name": "I select destination account",
+            "match": {
+              "location": "src/step-definitions/parabank-ui-steps.js:518"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 1835207
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "And ",
+            "line": 55,
+            "name": "I enter amount \"100.00\" to transfer",
+            "match": {
+              "location": "src/step-definitions/parabank-ui-steps.js:463"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 8089291
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "And ",
+            "line": 56,
+            "name": "I click \"Transfer\" button",
+            "match": {
+              "location": "src/step-definitions/parabank-ui-steps.js:332"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 40306916
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "Then ",
+            "line": 57,
+            "name": "I should see transfer success message",
+            "match": {
+              "location": "src/step-definitions/parabank-ui-steps.js:523"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 183575709
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "And ",
+            "line": 58,
+            "name": "the transfer should be reflected in account balances",
+            "match": {
+              "location": "src/step-definitions/parabank-ui-steps.js:535"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 1134028707
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "And ",
+            "line": 59,
+            "name": "transaction should appear in transaction history",
+            "match": {
+              "location": "src/step-definitions/parabank-ui-steps.js:561"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 326662041
+            }
+          }
+        ],
+        "tags": [
+          {
+            "name": "@ui",
+            "line": 1
+          },
+          {
+            "name": "@fund-transfer",
+            "line": 48
+          }
+        ],
+        "type": "scenario"
+      }
+    ],
+    "id": "parabank-application-ui-testing",
+    "line": 2,
+    "keyword": "Feature",
+    "name": "Parabank Application UI Testing",
+    "tags": [
+      {
+        "name": "@ui",
+        "line": 1
+      }
+    ],
+    "uri": "src/features/parabank-ui.feature"
+  }
+]

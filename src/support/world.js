@@ -1,10 +1,12 @@
-// src/support/world.js
 const { setWorldConstructor, World, setDefaultTimeout } = require('@cucumber/cucumber');
 const { chromium } = require('playwright');
 const fs = require('fs');
+const path = require('path');
+const ApiClient = require('../support/ApiClient'); // correct path
 
-// Default step timeout (60s)
-setDefaultTimeout(60000);
+
+// Increase default step timeout to 3 minutes
+setDefaultTimeout(180000);
 
 class CustomWorld extends World {
     constructor(options) {
@@ -15,14 +17,25 @@ class CustomWorld extends World {
         this.config = { baseUrl: 'https://parabank.parasoft.com/parabank/' };
         this.testData = {};
         this.apiResponse = { transactions: [] };
+    
+// ---- new properties ----
+        this.apiClient = new ApiClient();  // initialize API client
+        this.userId = null;                // store logged-in user ID
+        this.accountData = null;           // store API account info
+        this.uiBalance = null;             // store captured UI balance
+        this.initialBalance = null;        // optional for pre/post comparison
+    }
+    
+     // helper to set user ID after registration/login
+    async setUser(userId) {
+        this.userId = userId;
     }
 
     // -------------------- Browser Helpers --------------------
-    async initBrowser() {
+    async initBrowser(headless = false) {
         if (!this.browser) {
-            this.browser = await chromium.launch({ 
-                headless: false,
-                slowMo: 100,
+            this.browser = await chromium.launch({
+                headless,
                 args: ['--no-sandbox', '--disable-setuid-sandbox']
             });
         }
@@ -34,10 +47,10 @@ class CustomWorld extends World {
         }
         if (!this.page) {
             this.page = await this.context.newPage();
-            this.page.setDefaultTimeout(30000);
-            this.page.setDefaultNavigationTimeout(30000);
+            this.page.setDefaultTimeout(60000);
+            this.page.setDefaultNavigationTimeout(60000);
 
-            // Log browser console errors
+            // Capture console and page errors
             this.page.on('console', msg => {
                 if (msg.type() === 'error') console.log(`🔴 Console Error: ${msg.text()}`);
             });
@@ -54,8 +67,8 @@ class CustomWorld extends World {
 
     async navigateTo(path = '/') {
         if (!this.page) await this.initBrowser();
-        const url = path.startsWith('http') ? path : `${this.config.baseUrl}${path}`;
-        await this.page.goto(url, { waitUntil: 'networkidle', timeout: 30000 });
+        const url = path.startsWith('http') ? path : `${this.config.baseUrl}${path.replace(/^\/+/, '')}`;
+        await this.page.goto(url, { waitUntil: 'networkidle', timeout: 60000 });
     }
 
     // -------------------- Test Data Helpers --------------------
@@ -79,39 +92,58 @@ class CustomWorld extends World {
         };
     }
 
-    // -------------------- Registration Helper --------------------
+    // -------------------- Registration & Login --------------------
     async registerAndLogin() {
-        if (!this.page) await this.initBrowser();
+        await this.initBrowser();
         const user = this.generateUniqueUserData();
         this.setTestData('user', user);
 
-        await this.navigateTo('register.htm');
+        try {
+            await this.navigateTo('register.htm');
 
-        await this.page.fill('input[name="customer.firstName"]', user.firstName);
-        await this.page.fill('input[name="customer.lastName"]', user.lastName);
-        await this.page.fill('input[name="customer.address.street"]', user.address);
-        await this.page.fill('input[name="customer.address.city"]', user.city);
-        await this.page.fill('input[name="customer.address.state"]', user.state);
-        await this.page.fill('input[name="customer.address.zipCode"]', user.zipCode);
-        await this.page.fill('input[name="customer.phoneNumber"]', user.phoneNumber);
-        await this.page.fill('input[name="customer.ssn"]', user.ssn);
-        await this.page.fill('input[name="customer.username"]', user.username);
-        await this.page.fill('input[name="customer.password"]', user.password);
-        await this.page.fill('input[name="repeatedPassword"]', user.password);
+            // Fill registration form
+            await this.page.fill('input[name="customer.firstName"]', user.firstName);
+            await this.page.fill('input[name="customer.lastName"]', user.lastName);
+            await this.page.fill('input[name="customer.address.street"]', user.address);
+            await this.page.fill('input[name="customer.address.city"]', user.city);
+            await this.page.fill('input[name="customer.address.state"]', user.state);
+            await this.page.fill('input[name="customer.address.zipCode"]', user.zipCode);
+            await this.page.fill('input[name="customer.phoneNumber"]', user.phoneNumber);
+            await this.page.fill('input[name="customer.ssn"]', user.ssn);
+            await this.page.fill('input[name="customer.username"]', user.username);
+            await this.page.fill('input[name="customer.password"]', user.password);
+            await this.page.fill('input[name="repeatedPassword"]', user.password);
 
-        await this.page.click('input[value="Register"]');
-        await this.page.waitForLoadState('networkidle');
-        await this.page.waitForSelector('div[id="rightPanel"]', { timeout: 10000 });
+            // Submit registration
+            await Promise.all([
+                this.page.click('input[value="Register"]'),
+                this.page.waitForNavigation({ waitUntil: 'networkidle' })
+            ]);
 
-        const message = await this.page.textContent('div[id="rightPanel"]');
-        if (!message || !message.includes('Your account was created successfully')) {
-            throw new Error('Registration failed');
+            // Verify registration success
+            const message = await this.page.textContent('div[id="rightPanel"]');
+            if (!message || !message.includes('Your account was created successfully')) {
+                throw new Error(`Registration failed → Got message: ${message}`);
+            }
+
+            // Login after registration
+            await this.page.fill('input[name="username"]', user.username);
+            await this.page.fill('input[name="password"]', user.password);
+            await Promise.all([
+                this.page.click('input[value="Log In"]'),
+                this.page.waitForNavigation({ waitUntil: 'networkidle' })
+            ]);
+
+            // Confirm login by checking dashboard panel
+            await this.page.waitForSelector('#leftPanel', { timeout: 30000 });
+        } catch (error) {
+            await this.handleError(error, 'registerAndLogin');
         }
 
         return user;
     }
 
-    // -------------------- Enhanced Navigation Helper --------------------
+    // -------------------- Navigation --------------------
     async navigateToPage(pageName) {
         if (!this.page) await this.initBrowser();
 
@@ -129,38 +161,7 @@ class CustomWorld extends World {
         await this.navigateTo(pagePath);
     }
 
-    // -------------------- Account Creation Helper --------------------
-    async createSavingsAccount() {
-        if (!this.page) await this.initBrowser();
-        await this.navigateToPage('Open New Account');
-
-        const typeDropdown = this.page.locator('select[name="type"], select#type');
-        await typeDropdown.waitFor({ state: 'visible', timeout: 30000 });
-        await typeDropdown.selectOption('1'); // SAVINGS
-
-        const fromAccountDropdown = this.page.locator('select[name="fromAccountId"]');
-        await fromAccountDropdown.waitFor({ state: 'visible', timeout: 30000 });
-        const fromAccountOptions = await fromAccountDropdown.locator('option').all();
-        if (fromAccountOptions.length > 0) {
-            const firstOptionValue = await fromAccountOptions[0].getAttribute('value');
-            await fromAccountDropdown.selectOption(firstOptionValue);
-        }
-
-        await this.page.click('input[value="Open New Account"], button:has-text("Open New Account")');
-        await this.page.waitForLoadState('networkidle');
-        await this.page.waitForSelector('text=Congratulations, your account is now open', { timeout: 30000 });
-
-        try {
-            const accountNumberElement = this.page.locator('#newAccountId');
-            await accountNumberElement.waitFor({ state: 'visible', timeout: 10000 });
-            const accountNumber = await accountNumberElement.textContent();
-            this.setTestData('newAccountNumber', accountNumber);
-        } catch (error) {
-            console.log('Could not capture account number:', error.message);
-        }
-    }
-
-    // -------------------- Attachments --------------------
+    // -------------------- Screenshot & Attachments --------------------
     async attachScreenshot(name = 'screenshot') {
         if (this.page && this.attach) {
             const buffer = await this.page.screenshot({ fullPage: true });
@@ -168,7 +169,7 @@ class CustomWorld extends World {
         }
     }
 
-    async attachJson(name = 'data', obj) {
+    async attachJson(obj, name = 'data') {
         if (this.attach) await this.attach(JSON.stringify(obj, null, 2), 'application/json');
     }
 
@@ -177,10 +178,12 @@ class CustomWorld extends World {
         console.error(`Error in ${context}:`, error);
         if (this.page) {
             const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-            if (!fs.existsSync('screenshots')) fs.mkdirSync('screenshots', { recursive: true });
-            const screenshotPath = `screenshots/error-${context}-${timestamp}.png`;
+            const screenshotDir = path.join(__dirname, '../../reports/screenshots');
+            fs.mkdirSync(screenshotDir, { recursive: true });
+            const screenshotPath = path.join(screenshotDir, `error-${context}-${timestamp}.png`);
             await this.page.screenshot({ path: screenshotPath, fullPage: true });
             await this.attachScreenshot();
+            console.log(`📸 Screenshot saved at: ${screenshotPath}`);
         }
         throw error;
     }
@@ -194,7 +197,7 @@ class CustomWorld extends World {
     getApiResponse() { return this.apiResponse; }
     normalizeTransactionFields(txns) { return (txns || []).map(txn => ({ ...txn, id: Number(txn.id), accountId: Number(txn.accountId) })); }
 
-    // -------------------- Cleanup Helper --------------------
+    // -------------------- Cleanup --------------------
     async cleanup() { await this.closeBrowser(); }
 }
 

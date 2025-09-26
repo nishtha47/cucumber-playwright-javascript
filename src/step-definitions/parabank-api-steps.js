@@ -302,9 +302,17 @@ Then('transaction details should match exactly', function () {
   return logStep(this, 'PASS', 'UI and API transaction details match exactly');
 });
 
-
-
+// Compare UI balance with API
 Then('account balances should be synchronized', async function () {
+    const apiBalance = this.accountData?.[0]?.balance;
+    console.log('UI Balance:', this.uiBalance);
+    console.log('API Balance:', apiBalance);
+
+    assert.strictEqual(apiBalance, this.uiBalance, 'UI and API balances mismatch');
+});
+
+
+/*Then('account balances should be synchronized', async function () {
   // Safely extract API balance from response
   // Adjust the path based on actual API JSON structure
   const apiBalance = this.accountData?.accounts?.[0]?.balance;
@@ -315,6 +323,18 @@ Then('account balances should be synchronized', async function () {
 
   // Assert they match
   assert.strictEqual(apiBalance, this.uiBalance, 'UI and API balances mismatch');
+});*/
+
+
+Given('I fetch account data from API', async function () {
+    const user = this.getTestData('user');
+    if (!user) throw new Error('No registered user found in test data');
+
+    // Fetch accounts via ApiClient
+    const response = await this.apiClient.getCustomerAccounts(user.username);
+    this.accountData = response.data;
+
+    console.log('💾 Fetched account data from API:', this.accountData);
 });
 
 

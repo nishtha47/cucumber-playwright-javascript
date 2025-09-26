@@ -1,0 +1,129 @@
+[
+  {
+    "description": "  As a banking customer\n  I want to use the online banking system\n  So that I can manage my accounts and perform banking operations",
+    "elements": [
+      {
+        "description": "",
+        "id": "parabank-application-ui-testing;user-registration-and-login",
+        "keyword": "Scenario",
+        "line": 11,
+        "name": "User Registration and Login",
+        "steps": [
+          {
+            "arguments": [],
+            "keyword": "Given ",
+            "line": 8,
+            "name": "I navigate to Parabank application",
+            "match": {
+              "location": "src/step-definitions/parabank-ui-steps.js:20"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 3409705500
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "Given ",
+            "line": 12,
+            "name": "I am on the Parabank homepage",
+            "match": {
+              "location": "src/step-definitions/parabank-ui-steps.js:25"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 847647542
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "When ",
+            "line": 13,
+            "name": "I click on Register link",
+            "match": {
+              "location": "src/step-definitions/parabank-ui-steps.js:31"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 369056042
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "And ",
+            "line": 14,
+            "name": "I fill the registration form with unique user details",
+            "match": {
+              "location": "src/step-definitions/parabank-ui-steps.js:36"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 72835916
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "And ",
+            "line": 15,
+            "name": "I submit the registration form",
+            "match": {
+              "location": "src/step-definitions/parabank-ui-steps.js:52"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 357070666
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "Then ",
+            "line": 16,
+            "name": "I should see successful registration message",
+            "match": {
+              "location": "src/step-definitions/parabank-ui-steps.js:57"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 22095583
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "And ",
+            "line": 17,
+            "name": "I should be logged in automatically",
+            "match": {
+              "location": "src/step-definitions/parabank-ui-steps.js:63"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 324244584
+            }
+          }
+        ],
+        "tags": [
+          {
+            "name": "@ui",
+            "line": 1
+          },
+          {
+            "name": "@smoke",
+            "line": 10
+          }
+        ],
+        "type": "scenario"
+      }
+    ],
+    "id": "parabank-application-ui-testing",
+    "line": 2,
+    "keyword": "Feature",
+    "name": "Parabank Application UI Testing",
+    "tags": [
+      {
+        "name": "@ui",
+        "line": 1
+      }
+    ],
+    "uri": "src/features/parabank-ui.feature"
+  }
+]
