@@ -35,7 +35,7 @@ Before(async function (scenario) {
         console.log('🌐 Initializing browser for UI scenario...');
         try {
             // Always create a new browser per scenario for isolation
-            this.browser = await chromium.launch({ headless: false });
+            this.browser = await chromium.launch({ headless: true });
             this.context = await this.browser.newContext();
             this.page = await this.context.newPage();
             this.page.setDefaultTimeout(60000);
