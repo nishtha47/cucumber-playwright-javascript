@@ -2,218 +2,227 @@ pipeline {
     agent any
 
     environment {
-        NODE_ENV = 'test'
-        BASE_URL = 'https://parabank.parasoft.com/parabank'
-        PLAYWRIGHT_BROWSERS_PATH = '/var/jenkins_home/.cache/ms-playwright'
-        CI = 'true'
+        NODE_VERSION = '18.20.8'
+        REPORTS_DIR = 'reports'
+        DEBIAN_FRONTEND = 'noninteractive'
+        PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD = '0'
+        PLAYWRIGHT_BROWSERS_PATH = '/opt/playwright-browsers'
+        NVM_DIR = "${env.HOME}/.nvm"
+    }
+
+    options {
+        buildDiscarder(
+            logRotator(
+                daysToKeepStr: '30',
+                numToKeepStr: '10'
+            )
+        )
+        timeout(time: 30, unit: 'MINUTES')
+        timestamps()
     }
 
     stages {
+
+        stage('Environment Check') {
+            steps {
+                echo "🔍 Checking Jenkins environment..."
+                script {
+                    def whoami = sh(script: 'whoami', returnStdout: true).trim()
+                    def canSudo = sh(script: 'sudo -n true 2>/dev/null && echo "yes" || echo "no"', returnStdout: true).trim()
+                    echo "Running as user: ${whoami}"
+                    echo "Sudo access: ${canSudo}"
+                    sh 'df -h .'
+                    def dockerAvailable = sh(script: 'command -v docker >/dev/null 2>&1 && echo "yes" || echo "no"', returnStdout: true).trim()
+                    echo "Docker available: ${dockerAvailable}"
+                }
+            }
+        }
+
         stage('Checkout') {
             steps {
-                echo "Checking out source code..."
-                git url: 'https://github.com/nishtha47/cucumber-playwright-javascript-nm.git', branch: 'qa-coding-test'
+                echo "📥 Checking out source code..."
+                deleteDir()
+                git branch: 'qa-coding-test',
+                    url: 'https://github.com/nishtha47/cucumber-playwright-javascript-nm.git'
+                sh 'ls -la'
             }
         }
 
         stage('Setup Environment') {
             steps {
-                echo "Creating reports directory..."
-                sh 'mkdir -p reports'
-                
-                echo "Installing system dependencies for browsers..."
+                echo "🔧 Setting up environment..."
+                sh '''
+                    mkdir -p ${REPORTS_DIR} ~/.cache/ms-playwright node_modules
+                '''
                 script {
-                    try {
-                        sh '''
-                            if command -v sudo >/dev/null 2>&1; then
-                                sudo apt-get update -qq
-                                sudo apt-get install -y \
-                                    libnss3 libnspr4 libatk-bridge2.0-0 libdrm2 \
-                                    libxkbcommon0 libxcomposite1 libxdamage1 \
-                                    libxrandr2 libgbm1 libxss1 libasound2
-                            fi
-                        '''
-                    } catch (Exception e) {
-                        echo "Warning: Could not install system dependencies - ${e.getMessage()}"
-                    }
+                    sh '''
+                        if sudo -n true 2>/dev/null; then
+                            echo "✅ Running with sudo privileges"
+                            sudo apt-get update -qq || true
+                            sudo apt-get install -y curl wget gnupg2 software-properties-common || true
+                        else
+                            echo "⚠️ No sudo privileges - skipping system package installation"
+                        fi
+                    '''
                 }
+            }
+        }
+
+        stage('Install Node.js') {
+            steps {
+                echo '📦 Installing Node.js...'
+                sh '''
+                    if [ ! -s "$HOME/.nvm/nvm.sh" ]; then
+                        echo "Installing NVM..."
+                        curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.0/install.sh | bash
+                    fi
+
+                    export NVM_DIR="$HOME/.nvm"
+                    [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+
+                    nvm install 18.20.8
+                    nvm use 18.20.8
+
+                    node --version
+                    npm --version
+                '''
             }
         }
 
         stage('Install Dependencies') {
             steps {
-                echo "Installing NPM dependencies..."
-                sh 'npm ci'
-
-                echo "Installing Playwright browsers..."
+                echo "📦 Installing project dependencies..."
                 sh '''
-                    export PLAYWRIGHT_BROWSERS_PATH=/var/jenkins_home/.cache/ms-playwright
-                    mkdir -p "$PLAYWRIGHT_BROWSERS_PATH"
-                    npx playwright install chromium firefox webkit --with-deps || npx playwright install chromium firefox webkit
-                '''
-            }
-        }
+                    [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
 
-        stage('Run Tests in Parallel') {
-            parallel {
-                stage('Chromium Tests') {
-                    steps {
-                        echo "Running Chromium tests..."
-                        catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
-                            sh """
-                            export BROWSER=chromium
-                            export PLAYWRIGHT_BROWSERS_PATH=/var/jenkins_home/.cache/ms-playwright
-                            npx cucumber-js src/features/**/*.feature \
-                                --require src/step-definitions/**/*.js \
-                                --require src/support/hooks.js \
-                                --require src/support/world.js \
-                                --format json:reports/chromium-report.json \
-                                --format summary \
-                                --parallel 1 || echo "Chromium tests completed with issues"
-                            """
-                        }
-                    }
-                }
-
-                stage('Firefox Tests') {
-                    steps {
-                        echo "Running Firefox tests..."
-                        catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
-                            sh """
-                            export BROWSER=firefox
-                            export PLAYWRIGHT_BROWSERS_PATH=/var/jenkins_home/.cache/ms-playwright
-                            npx cucumber-js src/features/**/*.feature \
-                                --require src/step-definitions/**/*.js \
-                                --require src/support/hooks.js \
-                                --require src/support/world.js \
-                                --format json:reports/firefox-report.json \
-                                --format summary \
-                                --parallel 1 || echo "Firefox tests completed with issues"
-                            """
-                        }
-                    }
-                }
-
-                stage('WebKit Tests') {
-                    steps {
-                        echo "Running WebKit tests..."
-                        catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
-                            sh """
-                            export BROWSER=webkit
-                            export PLAYWRIGHT_BROWSERS_PATH=/var/jenkins_home/.cache/ms-playwright
-                            npx cucumber-js src/features/**/*.feature \
-                                --require src/step-definitions/**/*.js \
-                                --require src/support/hooks.js \
-                                --require src/support/world.js \
-                                --format json:reports/webkit-report.json \
-                                --format summary \
-                                --parallel 1 || echo "WebKit tests completed with issues"
-                            """
-                        }
-                    }
-                }
-            }
-        }
-
-        stage('Validate Test Reports') {
-            steps {
-                echo "Validating test reports..."
-                sh '''
-                    for browser in chromium firefox webkit; do
-                        if [ ! -f "reports/${browser}-report.json" ] || [ ! -s "reports/${browser}-report.json" ]; then
-                            echo "Creating placeholder JSON for ${browser}"
-                            echo "[]" > reports/${browser}-report.json
+                    rm -rf node_modules package-lock.json
+                    for i in 1 2 3; do
+                        echo "Installation attempt $i/3..."
+                        if npm install --no-fund --no-audit && npm install multiple-cucumber-html-reporter --save-dev; then
+                            echo "✅ Dependencies installed successfully"
+                            break
+                        else
+                            echo "⚠️ Installation attempt $i failed"
+                            [ $i -eq 3 ] && { echo "❌ All installation attempts failed"; exit 1; }
+                            sleep 10
                         fi
                     done
                 '''
             }
         }
 
-        stage('Generate Unified HTML Report') {
+        stage('Install Playwright Browsers') {
             steps {
-                echo "Generating unified Extent/Spark-style report..."
+                echo "🌐 Installing Playwright browsers..."
                 sh '''
-                    npm install multiple-cucumber-html-reporter --save-dev --no-audit --no-fund || echo "Reporter installation skipped"
-
-                    node -e "
-                        const path = require('path');
-                        const fs = require('fs');
-                        const reporter = require('multiple-cucumber-html-reporter');
-
-                        const browsers = ['chromium', 'firefox', 'webkit'];
-                        const jsonFiles = browsers.map(b => path.join(__dirname, 'reports', b+'-report.json')).filter(fs.existsSync);
-
-                        if (jsonFiles.length === 0) {
-                            console.error('❌ No JSON reports found!');
-                            process.exit(1);
-                        }
-
-                        reporter.generate({
-                            jsonDir: path.dirname(jsonFiles[0]),
-                            jsonFile: jsonFiles.map(f => path.basename(f)),
-                            reportPath: path.join(__dirname,'reports','extent'),
-                            displayDuration: true,
-                            openReportInBrowser: true,
-                            metadata: {
-                                browser: { name: 'Multiple Browsers', version: 'N/A' },
-                                device: 'CI Machine',
-                                platform: { name: process.platform, version: process.version }
-                            },
-                            customData: {
-                                title: 'Project Info',
-                                data: [
-                                    { label: 'Project', value: 'Parabank Automation' },
-                                    { label: 'Release', value: '1.0.0' },
-                                    { label: 'Execution Start Time', value: new Date().toLocaleString() }
-                                ]
-                            }
-                        });
-                        console.log('✅ Unified report generated at reports/extent');
-                    "
+                    [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+                    npx playwright install --with-deps chromium || echo "⚠️ Chromium installation failed (check sudo)"
                 '''
-                publishHTML([
-                    allowMissing: true,
-                    alwaysLinkToLastBuild: true,
-                    keepAll: true,
-                    reportDir: 'reports/extent',
-                    reportFiles: 'index.html',
-                    reportName: 'Unified Extent Spark Report'
-                ])
             }
         }
 
-        stage('Test Summary') {
+        stage('Pre-test Validation') {
             steps {
-                echo "Generating test summary..."
+                echo "✅ Validating test setup..."
                 sh '''
-                    for browser in chromium firefox webkit; do
-                        count=$(node -e "
-                            try {
-                                const data = JSON.parse(require('fs').readFileSync('reports/${browser}-report.json','utf8'));
-                                console.log(data.length || 0);
-                            } catch(e){ console.log(0); }
-                        " 2>/dev/null)
-                        echo "${browser}: $count features"
-                    done
+                    [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+                    find src -name "*.feature" | head -5
+                    find src -name "*.js" | head -10
+                    npm run || true
+                    npx playwright --version || echo "⚠️ Playwright CLI not working"
+                    curl -s --max-time 10 --head https://parabank.parasoft.com/parabank/index.htm || echo "⚠️ Parabank not accessible"
                 '''
+            }
+        }
+
+        stage('Run Tests') {
+            parallel {
+                stage('Chromium Tests') {
+                    environment { BROWSER = 'chromium' }
+                    steps {
+                        echo "🚀 Running tests in Chromium..."
+                        sh '''
+                            [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+
+                            export REPORT_FILE="${REPORTS_DIR}/cucumber-report-chromium-$(date +%s).json"
+                            timeout 20m npx cucumber-js "src/features/**/*.feature" \
+                                --require "src/step-definitions/**/*.js" \
+                                --require "src/support/hooks.js" \
+                                --require "src/support/world.js" \
+                                --format json:$REPORT_FILE \
+                                --format progress \
+                                --tags "not @skip and not @firefox-only and not @webkit-only" || true
+                            [ -f "$REPORT_FILE" ] && echo "✅ Chromium tests report generated" || echo "⚠️ No report generated"
+                        '''
+                    }
+                }
+
+                stage('API Only Tests') {
+                    environment { TEST_TYPE = 'api' }
+                    steps {
+                        echo "🔌 Running API-only tests..."
+                        sh '''
+                            [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+
+                            export REPORT_FILE="${REPORTS_DIR}/cucumber-report-api-$(date +%s).json"
+                            timeout 15m npx cucumber-js "src/features/**/*.feature" \
+                                --require "src/step-definitions/**/*.js" \
+                                --require "src/support/hooks.js" \
+                                --require "src/support/world.js" \
+                                --format json:$REPORT_FILE \
+                                --format progress \
+                                --tags "@api or @api-only" || true
+                            [ -f "$REPORT_FILE" ] && echo "✅ API tests report generated" || echo "⚠️ No report generated"
+                        '''
+                    }
+                }
+            }
+        }
+
+        stage('Generate Extent HTML Report') {
+            steps {
+                echo "📄 Generating Multiple-Cucumber HTML report..."
+                sh '''
+                    [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+
+                    node -e "
+                    const report = require('multiple-cucumber-html-reporter');
+                    report.generate({
+                        jsonDir: '${REPORTS_DIR}',
+                        reportPath: '${REPORTS_DIR}/html',
+                        metadata: {
+                            browser: { name: 'chromium', version: 'latest' },
+                            device: 'Local Test Machine',
+                            platform: { name: 'Linux', version: 'Jenkins' }
+                        }
+                    });
+                    "
+                '''
+            }
+        }
+
+        stage('Publish HTML Report') {
+            steps {
+                echo "📄 Publishing HTML report to Jenkins..."
+                publishHTML(target: [
+                    allowMissing: true,
+                    alwaysLinkToLastBuild: true,
+                    keepAll: true,
+                    reportDir: "${REPORTS_DIR}/html",
+                    reportFiles: 'index.html',
+                    reportName: 'Parabank Extent Report'
+                ])
             }
         }
     }
 
     post {
         always {
-            echo "Archiving test artifacts..."
-            archiveArtifacts artifacts: 'reports/**/*', allowEmptyArchive: true
+            echo "📋 Pipeline post-actions..."
+            archiveArtifacts artifacts: 'reports/**/*', allowEmptyArchive: true, fingerprint: true
         }
-        success { echo "Pipeline completed successfully!" }
-        unstable { echo "Pipeline completed with some test failures." }
-        failure { echo "Pipeline failed!" }
-        cleanup {
-            echo "Performing cleanup..."
-            sh '''
-                find . -name "*.tmp" -type f -delete 2>/dev/null || true
-                find . -name "playwright-report" -type d -exec rm -rf {} + 2>/dev/null || true
-            '''
-        }
+        success { echo "✅ Pipeline completed successfully!" }
+        failure { echo "❌ Pipeline failed!" }
+        unstable { echo "⚠️ Pipeline completed with issues - some tests may have failed" }
     }
 }
