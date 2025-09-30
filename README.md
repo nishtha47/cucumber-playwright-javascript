@@ -395,11 +395,19 @@ For issues, questions, or contributions:
 
 ## Report on Jenkins
 
+Enable HTML Publisher and Open Blue Ocean plugin in Jenkins
+
 <img width="3342" height="1720" alt="image" src="https://github.com/user-attachments/assets/b6a9459c-92e9-4835-b041-9e64973df480" />
 
 ## Blue Ocean Pipeline on Jenkins
 
+<img width="2618" height="1226" alt="image" src="https://github.com/user-attachments/assets/0c8510ba-afa2-4416-a800-6b8ad13808df" />
+
+
 <img width="2640" height="1864" alt="image" src="https://github.com/user-attachments/assets/0088e589-db5f-40bd-9f2c-4ac2127d79f2" />
+
+<img width="2614" height="1870" alt="image" src="https://github.com/user-attachments/assets/bf95a69e-3066-478e-b69d-17f715cb1015" />
+
 
 
 ## Scenario coverage
