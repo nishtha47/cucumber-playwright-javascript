@@ -397,6 +397,11 @@ For issues, questions, or contributions:
 
 <img width="3342" height="1720" alt="image" src="https://github.com/user-attachments/assets/b6a9459c-92e9-4835-b041-9e64973df480" />
 
+## Blue Ocean Pipeline on Jenkins
+
+<img width="2640" height="1864" alt="image" src="https://github.com/user-attachments/assets/0088e589-db5f-40bd-9f2c-4ac2127d79f2" />
+
+
 ## Scenario coverage
 
 <img width="2662" height="924" alt="image" src="https://github.com/user-attachments/assets/2b5dea41-43c4-42b3-8cdf-e273f92634c6" />
