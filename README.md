@@ -391,7 +391,8 @@ For issues, questions, or contributions:
 
 ## Jenkins Build Executed
 
-<img width="3438" height="1894" alt="image" src="https://github.com/user-attachments/assets/5b365720-b0da-455a-9099-9a3bd8edaaa2" />
+<img width="2672" height="1554" alt="image" src="https://github.com/user-attachments/assets/5b2c492c-7b50-42ba-9489-72dcb29a5bee" />
+
 
 ## Report on Jenkins
 
