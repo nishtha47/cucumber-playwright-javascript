@@ -390,6 +390,21 @@ For issues, questions, or contributions:
 <img width="1378" height="194" alt="image" src="https://github.com/user-attachments/assets/b578b5c0-cdaf-46f1-afd6-aa076cb1396c" />
 
 
+## PDF Report
+
+
+<img width="2142" height="1978" alt="image" src="https://github.com/user-attachments/assets/43e4ccdc-2603-4a78-8e76-dbb211bf01d2" />
+
+## HTML Report
+
+<img width="2616" height="1852" alt="image" src="https://github.com/user-attachments/assets/74215123-c996-49a5-8093-8e6d402c4a6c" />
+
+<img width="2292" height="1888" alt="image" src="https://github.com/user-attachments/assets/6222c5df-6198-4691-892d-67f3e0cbdfc8" />
+
+
+
+
+
 
 ## Jenkins Build Executed
 
