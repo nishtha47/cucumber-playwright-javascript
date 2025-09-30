@@ -5,18 +5,12 @@ pipeline {
         NODE_VERSION = '18.20.8'
         REPORTS_DIR = 'reports'
         DEBIAN_FRONTEND = 'noninteractive'
-        PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD = '0'
-        PLAYWRIGHT_BROWSERS_PATH = '/opt/playwright-browsers'
+        PLAYWRIGHT_BROWSERS_PATH = "${env.WORKSPACE}/playwright-browsers"
         NVM_DIR = "${env.HOME}/.nvm"
     }
 
     options {
-        buildDiscarder(
-            logRotator(
-                daysToKeepStr: '30',
-                numToKeepStr: '10'
-            )
-        )
+        buildDiscarder(logRotator(daysToKeepStr: '30', numToKeepStr: '10'))
         timeout(time: 30, unit: 'MINUTES')
         timestamps()
     }
@@ -27,13 +21,9 @@ pipeline {
             steps {
                 echo "🔍 Checking Jenkins environment..."
                 script {
-                    def whoami = sh(script: 'whoami', returnStdout: true).trim()
-                    def canSudo = sh(script: 'sudo -n true 2>/dev/null && echo "yes" || echo "no"', returnStdout: true).trim()
-                    echo "Running as user: ${whoami}"
-                    echo "Sudo access: ${canSudo}"
+                    echo "User: ${sh(script: 'whoami', returnStdout: true).trim()}"
+                    echo "Disk usage:"
                     sh 'df -h .'
-                    def dockerAvailable = sh(script: 'command -v docker >/dev/null 2>&1 && echo "yes" || echo "no"', returnStdout: true).trim()
-                    echo "Docker available: ${dockerAvailable}"
                 }
             }
         }
@@ -50,38 +40,24 @@ pipeline {
 
         stage('Setup Environment') {
             steps {
-                echo "🔧 Setting up environment..."
+                echo "🔧 Preparing workspace..."
                 sh '''
-                    mkdir -p ${REPORTS_DIR} ~/.cache/ms-playwright node_modules
+                    mkdir -p ${REPORTS_DIR} ~/.cache/ms-playwright node_modules ${PLAYWRIGHT_BROWSERS_PATH}
                 '''
-                script {
-                    sh '''
-                        if sudo -n true 2>/dev/null; then
-                            echo "✅ Running with sudo privileges"
-                            sudo apt-get update -qq || true
-                            sudo apt-get install -y curl wget gnupg2 software-properties-common || true
-                        else
-                            echo "⚠️ No sudo privileges - skipping system package installation"
-                        fi
-                    '''
-                }
             }
         }
 
-        stage('Install Node.js') {
+        stage('Install Node.js & NPM') {
             steps {
-                echo '📦 Installing Node.js...'
+                echo '📦 Installing Node.js via NVM...'
                 sh '''
-                    if [ ! -s "$HOME/.nvm/nvm.sh" ]; then
-                        echo "Installing NVM..."
+                    if [ ! -s "$NVM_DIR/nvm.sh" ]; then
                         curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.0/install.sh | bash
                     fi
 
-                    export NVM_DIR="$HOME/.nvm"
                     [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
-
-                    nvm install 18.20.8
-                    nvm use 18.20.8
+                    nvm install ${NODE_VERSION}
+                    nvm use ${NODE_VERSION}
 
                     node --version
                     npm --version
@@ -89,34 +65,26 @@ pipeline {
             }
         }
 
-        stage('Install Dependencies') {
+        stage('Install Project Dependencies') {
             steps {
                 echo "📦 Installing project dependencies..."
                 sh '''
                     [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
-
                     rm -rf node_modules package-lock.json
-                    for i in 1 2 3; do
-                        echo "Installation attempt $i/3..."
-                        if npm install --no-fund --no-audit && npm install multiple-cucumber-html-reporter --save-dev; then
-                            echo "✅ Dependencies installed successfully"
-                            break
-                        else
-                            echo "⚠️ Installation attempt $i failed"
-                            [ $i -eq 3 ] && { echo "❌ All installation attempts failed"; exit 1; }
-                            sleep 10
-                        fi
-                    done
+                    npm install --no-fund --no-audit
+                    npm install multiple-cucumber-html-reporter --save-dev
                 '''
             }
         }
 
         stage('Install Playwright Browsers') {
             steps {
-                echo "🌐 Installing Playwright browsers..."
+                echo "🌐 Installing Playwright browsers in workspace..."
                 sh '''
                     [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
-                    npx playwright install --with-deps chromium || echo "⚠️ Chromium installation failed (check sudo)"
+                    export PLAYWRIGHT_BROWSERS_PATH="${PLAYWRIGHT_BROWSERS_PATH}"
+
+                    npx playwright install --with-deps || echo "⚠️ Playwright browsers installation failed"
                 '''
             }
         }
@@ -126,9 +94,6 @@ pipeline {
                 echo "✅ Validating test setup..."
                 sh '''
                     [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
-                    find src -name "*.feature" | head -5
-                    find src -name "*.js" | head -10
-                    npm run || true
                     npx playwright --version || echo "⚠️ Playwright CLI not working"
                     curl -s --max-time 10 --head https://parabank.parasoft.com/parabank/index.htm || echo "⚠️ Parabank not accessible"
                 '''
@@ -143,8 +108,9 @@ pipeline {
                         echo "🚀 Running tests in Chromium..."
                         sh '''
                             [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+                            export PLAYWRIGHT_BROWSERS_PATH="${PLAYWRIGHT_BROWSERS_PATH}"
 
-                            export REPORT_FILE="${REPORTS_DIR}/cucumber-report-chromium-$(date +%s).json"
+                            REPORT_FILE="${REPORTS_DIR}/cucumber-report-chromium-$(date +%s).json"
                             timeout 20m npx cucumber-js "src/features/**/*.feature" \
                                 --require "src/step-definitions/**/*.js" \
                                 --require "src/support/hooks.js" \
@@ -163,8 +129,9 @@ pipeline {
                         echo "🔌 Running API-only tests..."
                         sh '''
                             [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+                            export PLAYWRIGHT_BROWSERS_PATH="${PLAYWRIGHT_BROWSERS_PATH}"
 
-                            export REPORT_FILE="${REPORTS_DIR}/cucumber-report-api-$(date +%s).json"
+                            REPORT_FILE="${REPORTS_DIR}/cucumber-report-api-$(date +%s).json"
                             timeout 15m npx cucumber-js "src/features/**/*.feature" \
                                 --require "src/step-definitions/**/*.js" \
                                 --require "src/support/hooks.js" \
@@ -179,23 +146,23 @@ pipeline {
             }
         }
 
-        stage('Generate Extent HTML Report') {
+        stage('Generate HTML Report') {
             steps {
                 echo "📄 Generating Multiple-Cucumber HTML report..."
                 sh '''
                     [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
 
                     node -e "
-                    const report = require('multiple-cucumber-html-reporter');
-                    report.generate({
-                        jsonDir: '${REPORTS_DIR}',
-                        reportPath: '${REPORTS_DIR}/html',
-                        metadata: {
-                            browser: { name: 'chromium', version: 'latest' },
-                            device: 'Local Test Machine',
-                            platform: { name: 'Linux', version: 'Jenkins' }
-                        }
-                    });
+                        const report = require('multiple-cucumber-html-reporter');
+                        report.generate({
+                            jsonDir: '${REPORTS_DIR}',
+                            reportPath: '${REPORTS_DIR}/html',
+                            metadata: {
+                                browser: { name: 'chromium', version: 'latest' },
+                                device: 'Local Test Machine',
+                                platform: { name: 'Linux', version: 'Jenkins' }
+                            }
+                        });
                     "
                 '''
             }
@@ -223,6 +190,6 @@ pipeline {
         }
         success { echo "✅ Pipeline completed successfully!" }
         failure { echo "❌ Pipeline failed!" }
-        unstable { echo "⚠️ Pipeline completed with issues - some tests may have failed" }
+        unstable { echo "⚠️ Pipeline completed with issues" }
     }
 }
