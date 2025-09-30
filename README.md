@@ -437,4 +437,18 @@ Enable HTML Publisher and Open Blue Ocean plugin in Jenkins
 
 ---
 
+## Key highlights include:
+
+✅ Stable pipeline stages for build, test execution, and report generation
+
+✅ Proper environment setup and dependency management
+
+✅ Robust error handling and clean workspace management
+
+✅ Integration-ready structure for Jenkins shared libraries or multibranch pipelines
+
+✅ Open Blue Ocean pipeline enabled for visual pipeline tracking and enhanced CI/CD visibility
+
+✅ Extent and PDF reports configured for detailed test results and improved QA visibility
+
 **Note**: This framework is designed for testing the ParaBank demo application. Ensure the target application is accessible before running tests.
